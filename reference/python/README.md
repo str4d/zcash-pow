@@ -9,3 +9,9 @@ To run:
 ```python
 python pow.py
 ```
+
+Details about available options:
+
+```python
+python pow.py -h
+```
