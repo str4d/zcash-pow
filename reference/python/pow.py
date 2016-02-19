@@ -163,8 +163,8 @@ def mine(n, k, d):
         curr_hash = digest.finalize()
         print '-----------------'
         print 'Mined block!'
-        print 'Current hash:  %s' % print_hash(curr_hash)
         print 'Previous hash: %s' % print_hash(prev_hash)
+        print 'Current hash:  %s' % print_hash(curr_hash)
         print 'Nonce:         %s' % nonce
         print 'Time to find:  %s' % str(duration)
         print '-----------------'
