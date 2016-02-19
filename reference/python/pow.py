@@ -171,13 +171,17 @@ def mine(n, k, d):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n", type=int, default=96,
+    parser.add_argument('-n', type=int, default=96,
                         help='length of the strings to be XORed')
-    parser.add_argument("-k", type=int, default=5,
+    parser.add_argument('-k', type=int, default=5,
                         help='number of strings needed for a solution')
-    parser.add_argument("-d", type=int, default=3,
+    parser.add_argument('-d', type=int, default=3,
                         help='the difficulty (higher is more difficult)')
+    parser.add_argument('-v', '--verbosity', action='count')
     args = parser.parse_args()
+
+    DEBUG = args.verbosity > 0
+    VERBOSE = args.verbosity > 1
     try:
         mine(args.n, args.k, args.d)
     except KeyboardInterrupt:
