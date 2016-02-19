@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import argparse
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from datetime import datetime
@@ -169,7 +170,15 @@ def mine(n, k, d):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-n", type=int, default=96,
+                        help='length of the strings to be XORed')
+    parser.add_argument("-k", type=int, default=5,
+                        help='number of strings needed for a solution')
+    parser.add_argument("-d", type=int, default=3,
+                        help='the difficulty (higher is more difficult)')
+    args = parser.parse_args()
     try:
-        mine(96, 5, 3)
+        mine(args.n, args.k, args.d)
     except KeyboardInterrupt:
         pass
