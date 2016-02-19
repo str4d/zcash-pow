@@ -146,10 +146,9 @@ def mine(n, k, d):
                 gbp_start = datetime.today()
             x = gbp_basic(curr_digest, n, k)
             if DEBUG:
-                print 'GBP solution took %s' % str(datetime.today() - gbp_start)
-            if not x:
-                raise RuntimeError('Could not find a solution')
-            if difficulty_filter(curr_digest.copy(), x, d):
+                print 'GBP took %s' % str(datetime.today() - gbp_start)
+                if not x: print 'No solution found'
+            if x and difficulty_filter(curr_digest.copy(), x, d):
                 break
             nonce += 1
         duration = datetime.today() - start
