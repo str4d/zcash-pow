@@ -134,7 +134,7 @@ def mine(n, k, d):
         digest.update(prev_hash)
         nonce = 0
         x = []
-        while True:
+        while (nonce >> 161 == 0):
             if DEBUG:
                 print
                 print 'Nonce: %d' % nonce
@@ -152,6 +152,9 @@ def mine(n, k, d):
                 break
             nonce += 1
         duration = datetime.today() - start
+
+        if not x:
+            raise RuntimeError('Could not find any valid nonce. Wow.')
 
         # H(I||V||x_1||x_2||...|x_2^k)
         hash_nonce(digest, nonce)
