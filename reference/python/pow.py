@@ -119,8 +119,15 @@ def difficulty_filter(digest, x, d):
 def print_hash(h):
     return ''.join('{0:02x}'.format(ord(x), 'x') for x in h)
 
+def validate_params(n, k):
+    if (k >= n):
+        raise ValueError('n must be larger than k')
+    if ((n/(k+1)) % 8 != 0):
+        raise ValueError('Parameters must satisfy n/(k+1) = 0 mod 8')
+
 def mine(n, k, d):
     print 'Miner starting'
+    validate_params(n, k)
     print '- n: %d' % n
     print '- k: %d' % k
     print '- d: %d' % d
