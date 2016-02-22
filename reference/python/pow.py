@@ -5,6 +5,9 @@ from cryptography.hazmat.primitives import hashes
 from datetime import datetime
 from operator import itemgetter
 
+# Fallback in case we don't have progressbar available
+bar = lambda x: x
+
 DEBUG = False
 VERBOSE = False
 
@@ -37,7 +40,7 @@ def gbp_basic(digest, n, k):
     # 1) Generate first list
     if DEBUG: print 'Generating first list'
     X = []
-    for i in range(0, 2**(collision_length+1)):
+    for i in bar(range(0, 2**(collision_length+1))):
         # X_i = H(I||V||x_i)
         curr_digest = digest.copy()
         # TODO convert i to x_i
@@ -193,6 +196,16 @@ if __name__ == '__main__':
 
     DEBUG = args.verbosity > 0
     VERBOSE = args.verbosity > 1
+
+    # Try to use pretty progress bars in debug mode
+    if DEBUG:
+        try:
+            import progressbar
+            bar = progressbar.ProgressBar()
+        except:
+            print 'Install the progressbar2 module to show progress bars in -v mode.'
+            print
+
     try:
         mine(args.n, args.k, args.d)
     except KeyboardInterrupt:
