@@ -40,6 +40,7 @@ def gbp_basic(digest, n, k):
     # 1) Generate first list
     if DEBUG: print 'Generating first list'
     X = []
+    if DEBUG and progressbar: bar = progressbar.ProgressBar()
     for i in bar(range(0, 2**(collision_length+1))):
         # X_i = H(I||V||x_i)
         curr_digest = digest.copy()
@@ -60,6 +61,9 @@ def gbp_basic(digest, n, k):
 
         if DEBUG: print '- Finding collisions'
         Xc = []
+        if DEBUG and progressbar:
+            orig_size = len(X)
+            pbar = progressbar.ProgressBar(max_value=orig_size)
         while len(X) > 0:
             # 2b) Find next set of unordered pairs with collisions on first n/(k+1) bits
             k = 1
@@ -80,6 +84,8 @@ def gbp_basic(digest, n, k):
             while k > 0:
                 X.pop(-1)
                 k -= 1
+            if DEBUG and progressbar: pbar.update(orig_size - len(X))
+        if DEBUG and progressbar: pbar.finish()
         # 2e) Replace previous list with new list
         X = Xc
 
@@ -93,7 +99,8 @@ def gbp_basic(digest, n, k):
             print '%s %s' % (print_hash(Xi[0]), Xi[1])
     if DEBUG: print '- Finding collisions'
     solns = []
-    for i in range(0, len(X)-1):
+    if DEBUG and progressbar: bar = progressbar.ProgressBar(redirect_stdout=True)
+    for i in bar(range(0, len(X)-1)):
         res = xor(X[i][0], X[i+1][0])
         if count_zeroes(res) == n and X[i][1] != X[i+1][1]:
             if DEBUG and VERBOSE:
@@ -201,10 +208,10 @@ if __name__ == '__main__':
     if DEBUG:
         try:
             import progressbar
-            bar = progressbar.ProgressBar()
         except:
             print 'Install the progressbar2 module to show progress bars in -v mode.'
             print
+            progressbar = None
 
     try:
         mine(args.n, args.k, args.d)
