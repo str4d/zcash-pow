@@ -88,15 +88,17 @@ def gbp_basic(digest, n, k):
     if DEBUG and VERBOSE:
         for Xi in X[-32:]:
             print '%s %s' % (print_hash(Xi[0]), Xi[1])
-    if DEBUG: print '- Finding collision'
+    if DEBUG: print '- Finding collisions'
+    solns = []
     for i in range(0, len(X)-1):
         res = xor(X[i][0], X[i+1][0])
         if count_zeroes(res) == n and X[i][1] != X[i+1][1]:
             if DEBUG and VERBOSE:
-                print '%s %s' % (print_hash(X[i][0]), X[i][1])
-                print '%s %s' % (print_hash(X[i+1][0]), X[i+1][1])
-            return list(X[i][1] + X[i+1][1])
-    return None
+                print 'Found solution:'
+                print '- %s %s' % (print_hash(X[i][0]), X[i][1])
+                print '- %s %s' % (print_hash(X[i+1][0]), X[i+1][1])
+            solns.append(list(X[i][1] + X[i+1][1]))
+    return solns
 
 def difficulty_filter(digest, x, d):
     # H(I||V||x_1||x_2||...|x_2^k)
@@ -136,7 +138,7 @@ def mine(n, k, d):
         digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
         digest.update(prev_hash)
         nonce = 0
-        x = []
+        x = None
         while (nonce >> 161 == 0):
             if DEBUG:
                 print
@@ -147,11 +149,15 @@ def mine(n, k, d):
             # (x_1, x_2, ...) = A(I, V, n, k)
             if DEBUG:
                 gbp_start = datetime.today()
-            x = gbp_basic(curr_digest, n, k)
+            solns = gbp_basic(curr_digest, n, k)
             if DEBUG:
                 print 'GBP took %s' % str(datetime.today() - gbp_start)
-                if not x: print 'No solution found'
-            if x and difficulty_filter(curr_digest.copy(), x, d):
+                print 'Number of solutions: %d' % len(solns)
+            for soln in solns:
+                if difficulty_filter(curr_digest.copy(), soln, d):
+                    x = soln
+                    break
+            if x:
                 break
             nonce += 1
         duration = datetime.today() - start
