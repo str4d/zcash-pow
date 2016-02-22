@@ -97,7 +97,7 @@ def gbp_basic(digest, n, k):
                 print 'Found solution:'
                 print '- %s %s' % (print_hash(X[i][0]), X[i][1])
                 print '- %s %s' % (print_hash(X[i+1][0]), X[i+1][1])
-            solns.append(list(X[i][1] + X[i+1][1]))
+            solns.append(sorted(list(X[i][1] + X[i+1][1])))
     return solns
 
 def difficulty_filter(digest, x, d):
