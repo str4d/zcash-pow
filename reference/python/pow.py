@@ -57,32 +57,28 @@ def gbp_basic(digest, n, k):
 
         if DEBUG: print '- Finding collisions'
         Xc = []
-        j = 0
-        while j < len(X):
+        while len(X) > 0:
             # 2b) Find next set of unordered pairs with collisions on first n/(k+1) bits
-            k = j + 1
+            k = 1
             while k < len(X):
-                if not has_collision(X[j][0], X[k][0], i, collision_length):
+                if not has_collision(X[-1][0], X[-1-k][0], i, collision_length):
                     break
                 k += 1
 
             # 2c) Store tuples (X_i ^ X_j, (i, j)) on the table
-            for l in range(j, k-1):
+            for l in range(0, k-1):
                 for m in range(l+1, k):
-                    if reduce(lambda x,y: x and y, [x not in X[m][1] for x in X[l][1]]):
-                        Xc.append((xor(X[l][0], X[m][0]),
-                                   tuple(sorted(list(X[l][1] + X[m][1])))))
+                    # Check that there are no duplicate indices in tuples i and j
+                    if reduce(lambda x,y: x and y, [x not in X[-1-m][1] for x in X[-1-l][1]]):
+                        Xc.append((xor(X[-1-l][0], X[-1-m][0]),
+                                   tuple(sorted(list(X[-1-l][1] + X[-1-m][1])))))
 
-            # 2d) Skip over this set
-            j = k
+            # 2d) Drop this set
+            while k > 0:
+                X.pop(-1)
+                k -= 1
         # 2e) Replace previous list with new list
         X = Xc
-
-        # Note that 2d) and 2e) mean that this implementation uses more memory
-        # than necessary, having the lists for two rounds in memory at the same
-        # time. This strategy was taken over using list.pop(0) and list.append()
-        # to reduce runtimes by a factor of ~10,000 on my Asus Aspire One (for
-        # development ease :P).
 
     # k+1) Find a collision on last 2n(k+1) bits
     if DEBUG:
