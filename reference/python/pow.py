@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import argparse
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
