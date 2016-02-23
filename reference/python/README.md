@@ -7,11 +7,11 @@ Requirements:
 To run:
 
 ```python
-python pow.py
+./pow.py
 ```
 
 Details about available options:
 
 ```python
-python pow.py -h
+./pow.py -h
 ```
