@@ -5,9 +5,6 @@ from cryptography.hazmat.primitives import hashes
 from datetime import datetime
 from operator import itemgetter
 
-# Fallback in case we don't have progressbar available
-bar = lambda x: x
-
 DEBUG = False
 VERBOSE = False
 
@@ -41,6 +38,7 @@ def gbp_basic(digest, n, k):
     if DEBUG: print 'Generating first list'
     X = []
     if DEBUG and progressbar: bar = progressbar.ProgressBar()
+    else: bar = lambda x: x
     for i in bar(range(0, 2**(collision_length+1))):
         # X_i = H(I||V||x_i)
         curr_digest = digest.copy()
