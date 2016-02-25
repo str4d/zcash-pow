@@ -1,7 +1,7 @@
 # Python reference implementation of the Zcash proof-of-work
 
-The PoW used by Zcash is a memory-hard algorithm based on the Generalised
-Birthday Problem.
+The PoW currently being considered by Zcash is a memory-hard algorithm based on
+the Generalised Birthday Problem.
 
 Requirements:
 
