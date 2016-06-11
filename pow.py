@@ -64,24 +64,24 @@ def gbp_basic(digest, n, k):
             pbar = progressbar.ProgressBar(max_value=orig_size)
         while len(X) > 0:
             # 2b) Find next set of unordered pairs with collisions on first n/(k+1) bits
-            k = 1
-            while k < len(X):
-                if not has_collision(X[-1][0], X[-1-k][0], i, collision_length):
+            j = 1
+            while j < len(X):
+                if not has_collision(X[-1][0], X[-1-j][0], i, collision_length):
                     break
-                k += 1
+                j += 1
 
             # 2c) Store tuples (X_i ^ X_j, (i, j)) on the table
-            for l in range(0, k-1):
-                for m in range(l+1, k):
+            for l in range(0, j-1):
+                for m in range(l+1, j):
                     # Check that there are no duplicate indices in tuples i and j
                     if reduce(lambda x,y: x and y, [x not in X[-1-m][1] for x in X[-1-l][1]]):
                         Xc.append((xor(X[-1-l][0], X[-1-m][0]),
                                    tuple(sorted(list(X[-1-l][1] + X[-1-m][1])))))
 
             # 2d) Drop this set
-            while k > 0:
+            while j > 0:
                 X.pop(-1)
-                k -= 1
+                j -= 1
             if DEBUG and progressbar: pbar.update(orig_size - len(X))
         if DEBUG and progressbar: pbar.finish()
         # 2e) Replace previous list with new list
