@@ -131,6 +131,9 @@ def difficulty_filter(prev_hash, nonce, soln, d):
 # Demo miner
 #
 
+def zcash_person(n, k):
+    return b'ZcashPoW' + struct.pack('<II', n, k)
+
 def print_hash(h):
     return ''.join('{0:02x}'.format(ord(x), 'x') for x in h)
 
@@ -152,7 +155,7 @@ def mine(n, k, d):
     while True:
         start = datetime.today()
         # H(I||...
-        digest = blake2b(digest_size=n/8)
+        digest = blake2b(digest_size=n/8, person=zcash_person(n, k))
         digest.update(prev_hash)
         nonce = 0
         x = None
