@@ -61,7 +61,7 @@ class EquihashSolverTestCase(unittest.TestCase):
         digest.update(self.I)
         hash_nonce(digest, self.nonce)
         ret = gbp_basic(digest, self.n, self.k)
-        self.assertEqual(ret, self.solns)
+        self.assertEqual(sorted(ret), self.solns)
 
 def test_vectors():
     suite = unittest.TestSuite()
