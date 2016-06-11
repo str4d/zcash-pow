@@ -5,18 +5,18 @@ from cryptography.hazmat.primitives import hashes
 from datetime import datetime
 from operator import itemgetter
 from pyblake2 import blake2b
+import struct
 
 DEBUG = False
 VERBOSE = False
 
 
 def hash_nonce(digest, nonce):
-    # TODO update when digest format confirmed
-    digest.update(bytes(nonce))
+    for i in range(8):
+        digest.update(struct.pack('<I', nonce >> (32*i)))
 
 def hash_xi(digest, xi):
-    # TODO update when digest format confirmed
-    digest.update(bytes(xi))
+    digest.update(struct.pack('<I', xi))
 
 def count_zeroes(h):
     # Convert to binary string
@@ -43,7 +43,6 @@ def gbp_basic(digest, n, k):
     for i in bar(range(0, 2**(collision_length+1))):
         # X_i = H(I||V||x_i)
         curr_digest = digest.copy()
-        # TODO convert i to x_i
         hash_xi(curr_digest, i)
         X.append((curr_digest.digest(), (i,)))
 
