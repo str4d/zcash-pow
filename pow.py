@@ -9,6 +9,7 @@ import struct
 
 DEBUG = False
 VERBOSE = False
+progressbar = None
 
 
 def hash_nonce(digest, nonce):
@@ -217,7 +218,6 @@ if __name__ == '__main__':
         except:
             print 'Install the progressbar2 module to show progress bars in -v mode.'
             print
-            progressbar = None
 
     try:
         mine(args.n, args.k, args.d)
