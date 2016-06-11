@@ -29,6 +29,13 @@ def has_collision(ha, hb, i, l):
     res = [ha[j] == hb[j] for j in range((i-1)*l/8, i*l/8)]
     return reduce(lambda x, y: x and y, res)
 
+def distinct_indices(a, b):
+    for i in a:
+        for j in b:
+            if i == j:
+                return False
+    return True
+
 def xor(ha, hb):
     return ''.join(chr(ord(a) ^ ord(b)) for a,b in zip(ha,hb))
 
@@ -75,9 +82,12 @@ def gbp_basic(digest, n, k):
             for l in range(0, j-1):
                 for m in range(l+1, j):
                     # Check that there are no duplicate indices in tuples i and j
-                    if reduce(lambda x,y: x and y, [x not in X[-1-m][1] for x in X[-1-l][1]]):
-                        Xc.append((xor(X[-1-l][0], X[-1-m][0]),
-                                   tuple(sorted(list(X[-1-l][1] + X[-1-m][1])))))
+                    if distinct_indices(X[-1-l][1], X[-1-m][1]):
+                        if X[-1-l][1][0] < X[-1-m][1][0]:
+                            concat = X[-1-l][1] + X[-1-m][1]
+                        else:
+                            concat = X[-1-m][1] + X[-1-l][1]
+                        Xc.append((xor(X[-1-l][0], X[-1-m][0]), concat))
 
             # 2d) Drop this set
             while j > 0:
@@ -101,12 +111,15 @@ def gbp_basic(digest, n, k):
     if DEBUG and progressbar: bar = progressbar.ProgressBar(redirect_stdout=True)
     for i in bar(range(0, len(X)-1)):
         res = xor(X[i][0], X[i+1][0])
-        if count_zeroes(res) == n and X[i][1] != X[i+1][1]:
+        if count_zeroes(res) == n and distinct_indices(X[i][1], X[i+1][1]):
             if DEBUG and VERBOSE:
                 print 'Found solution:'
                 print '- %s %s' % (print_hash(X[i][0]), X[i][1])
                 print '- %s %s' % (print_hash(X[i+1][0]), X[i+1][1])
-            solns.append(sorted(list(X[i][1] + X[i+1][1])))
+            if X[i][1][0] < X[i+1][1][0]:
+                solns.append(list(X[i][1] + X[i+1][1]))
+            else:
+                solns.append(list(X[i+1][1] + X[i][1]))
     return solns
 
 def block_hash(prev_hash, nonce, soln):
