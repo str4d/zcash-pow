@@ -4,6 +4,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from datetime import datetime
 from operator import itemgetter
+from pyblake2 import blake2b
 
 DEBUG = False
 VERBOSE = False
@@ -44,7 +45,7 @@ def gbp_basic(digest, n, k):
         curr_digest = digest.copy()
         # TODO convert i to x_i
         hash_xi(curr_digest, i)
-        X.append((curr_digest.finalize()[:n/8], (i,)))
+        X.append((curr_digest.digest(), (i,)))
 
     # 3) Repeat step 2 until 2n/(k+1) bits remain
     for i in range(1, k):
@@ -108,11 +109,20 @@ def gbp_basic(digest, n, k):
             solns.append(sorted(list(X[i][1] + X[i+1][1])))
     return solns
 
-def difficulty_filter(digest, x, d):
+def block_hash(prev_hash, nonce, soln):
     # H(I||V||x_1||x_2||...|x_2^k)
-    for xi in x:
+    digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
+    digest.update(prev_hash)
+    hash_nonce(digest, nonce)
+    for xi in soln:
         hash_xi(digest, xi)
     h = digest.finalize()
+    digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
+    digest.update(h)
+    return digest.finalize()
+
+def difficulty_filter(prev_hash, nonce, soln, d):
+    h = block_hash(prev_hash, nonce, soln)
     count = count_zeroes(h)
     if DEBUG: print 'Leading zeroes: %d' % count
     return count >= d
@@ -143,7 +153,7 @@ def mine(n, k, d):
     while True:
         start = datetime.today()
         # H(I||...
-        digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
+        digest = blake2b(digest_size=n/8)
         digest.update(prev_hash)
         nonce = 0
         x = None
@@ -162,7 +172,7 @@ def mine(n, k, d):
                 print 'GBP took %s' % str(datetime.today() - gbp_start)
                 print 'Number of solutions: %d' % len(solns)
             for soln in solns:
-                if difficulty_filter(curr_digest.copy(), soln, d):
+                if difficulty_filter(prev_hash, nonce, soln, d):
                     x = soln
                     break
             if x:
@@ -173,11 +183,7 @@ def mine(n, k, d):
         if not x:
             raise RuntimeError('Could not find any valid nonce. Wow.')
 
-        # H(I||V||x_1||x_2||...|x_2^k)
-        hash_nonce(digest, nonce)
-        for xi in x:
-            hash_xi(digest, xi)
-        curr_hash = digest.finalize()
+        curr_hash = block_hash(prev_hash, nonce, soln)
         print '-----------------'
         print 'Mined block!'
         print 'Previous hash: %s' % print_hash(prev_hash)
