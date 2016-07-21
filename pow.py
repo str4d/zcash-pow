@@ -236,7 +236,8 @@ if __name__ == '__main__':
                         help='number of strings needed for a solution')
     parser.add_argument('-d', type=int, default=3,
                         help='the difficulty (higher is more difficult)')
-    parser.add_argument('-v', '--verbosity', action='count')
+    parser.add_argument('-v', '--verbosity', action='count',
+                        help='show debug output (use -vv for verbose output)')
     args = parser.parse_args()
 
     DEBUG = args.verbosity > 0
