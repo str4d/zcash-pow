@@ -108,18 +108,36 @@ def gbp_basic(digest, n, k):
             print '%s %s' % (print_hash(Xi[0]), Xi[1])
     if DEBUG: print '- Finding collisions'
     solns = []
-    if DEBUG and progressbar: bar = progressbar.ProgressBar(redirect_stdout=True)
-    for i in bar(range(0, len(X)-1)):
-        res = xor(X[i][0], X[i+1][0])
-        if count_zeroes(res) == n and distinct_indices(X[i][1], X[i+1][1]):
-            if DEBUG and VERBOSE:
-                print 'Found solution:'
-                print '- %s %s' % (print_hash(X[i][0]), X[i][1])
-                print '- %s %s' % (print_hash(X[i+1][0]), X[i+1][1])
-            if X[i][1][0] < X[i+1][1][0]:
-                solns.append(list(X[i][1] + X[i+1][1]))
-            else:
-                solns.append(list(X[i+1][1] + X[i][1]))
+    if DEBUG and progressbar:
+        orig_size = len(X)
+        pbar = progressbar.ProgressBar(max_value=orig_size, redirect_stdout=True)
+    while len(X) > 0:
+        j = 1
+        while j < len(X):
+            if not (has_collision(X[-1][0], X[-1-j][0], k, collision_length) and
+                    has_collision(X[-1][0], X[-1-j][0], k+1, collision_length)):
+                break
+            j += 1
+
+        for l in range(0, j-1):
+            for m in range(l+1, j):
+                res = xor(X[-1-l][0], X[-1-m][0])
+                if count_zeroes(res) == n and distinct_indices(X[-1-l][1], X[-1-m][1]):
+                    if DEBUG and VERBOSE:
+                        print 'Found solution:'
+                        print '- %s %s' % (print_hash(X[-1-l][0]), X[-1-l][1])
+                        print '- %s %s' % (print_hash(X[-1-m][0]), X[-1-m][1])
+                    if X[-1-l][1][0] < X[-1-m][1][0]:
+                        solns.append(list(X[-1-l][1] + X[-1-m][1]))
+                    else:
+                        solns.append(list(X[-1-m][1] + X[-1-l][1]))
+
+        # 2d) Drop this set
+        while j > 0:
+            X.pop(-1)
+            j -= 1
+        if DEBUG and progressbar: pbar.update(orig_size - len(X))
+    if DEBUG and progressbar: pbar.finish()
     return solns
 
 def block_hash(prev_hash, nonce, soln):
