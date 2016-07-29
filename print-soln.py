@@ -33,8 +33,10 @@ class node(object):
 def generate_hashes(n, k, header):
     digest = blake2b(digest_size=n/8, person=zcash_person(n, k))
     digest.update(header[:140])
+    numIndices = ord(header[140]) if ord(header[140]) < 256 else struct.unpack('<H', header[141:143])
+    assert numIndices == 2**k, 'Block header does not match Equihash parameters'
     i = 143 if ord(header[140]) == 256 else 141
-    soln = [struct.unpack('<I', header[i:i+4])[0] for i in range(i, len(header), 4)]
+    soln = [struct.unpack('<I', header[i:i+4])[0] for i in range(i, i+numIndices*4, 4)]
     hashes = [hash_xi(digest.copy(), xi).digest() for xi in soln]
     return soln, hashes
 
@@ -52,7 +54,7 @@ if __name__ == '__main__':
                         help='Equihash parameter N')
     parser.add_argument('k', type=int,
                         help='Equihash parameter K')
-    parser.add_argument('header', help='the block header in hexadecimal')
+    parser.add_argument('header', help='a block or block header in hexadecimal')
     args = parser.parse_args()
 
     print_hashes(*generate_hashes(args.n, args.k, unhexlify(args.header)))
