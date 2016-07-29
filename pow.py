@@ -18,6 +18,7 @@ def hash_nonce(digest, nonce):
 
 def hash_xi(digest, xi):
     digest.update(struct.pack('<I', xi))
+    return digest # For chaining
 
 def count_zeroes(h):
     # Convert to binary string
