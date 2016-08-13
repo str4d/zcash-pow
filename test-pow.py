@@ -64,7 +64,7 @@ class EquihashSolverTestCase(unittest.TestCase):
         return '%d,%d: "%s" | %d' % (self.n, self.k, self.I, self.nonce)
 
     def testBasicSolver(self):
-        digest = blake2b(digest_size=self.n/8, person=zcash_person(self.n, self.k))
+        digest = blake2b(digest_size=(512/self.n)*self.n/8, person=zcash_person(self.n, self.k))
         digest.update(self.I)
         hash_nonce(digest, self.nonce)
         ret = gbp_basic(digest, self.n, self.k)

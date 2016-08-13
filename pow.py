@@ -43,17 +43,22 @@ def xor(ha, hb):
 def gbp_basic(digest, n, k):
     '''Implementation of Basic Wagner's algorithm for the GBP.'''
     collision_length = n/(k+1)
+    indices_per_hash_output = 512/n
 
     # 1) Generate first list
     if DEBUG: print 'Generating first list'
     X = []
+    tmp_hash = ''
     if DEBUG and progressbar: bar = progressbar.ProgressBar()
     else: bar = lambda x: x
     for i in bar(range(0, 2**(collision_length+1))):
-        # X_i = H(I||V||x_i)
-        curr_digest = digest.copy()
-        hash_xi(curr_digest, i)
-        X.append((curr_digest.digest(), (i,)))
+        r = i % indices_per_hash_output
+        if r == 0:
+            # X_i = H(I||V||x_i)
+            curr_digest = digest.copy()
+            hash_xi(curr_digest, i/indices_per_hash_output)
+            tmp_hash = curr_digest.digest()
+        X.append((tmp_hash[r*n/8:(r+1)*n/8], (i,)))
 
     # 3) Repeat step 2 until 2n/(k+1) bits remain
     for i in range(1, k):
@@ -188,7 +193,7 @@ def mine(n, k, d):
     while True:
         start = datetime.today()
         # H(I||...
-        digest = blake2b(digest_size=n/8, person=zcash_person(n, k))
+        digest = blake2b(digest_size=(512/n)*n/8, person=zcash_person(n, k))
         digest.update(prev_hash)
         nonce = 0
         x = None
