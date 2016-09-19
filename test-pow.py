@@ -1,12 +1,36 @@
 #!/usr/bin/env python2
+from binascii import unhexlify
+from pyblake2 import blake2b
+import unittest
+
+from convert import (
+    compress_array,
+    expand_array,
+)
 from pow import (
     gbp_basic,
     hash_nonce,
     hash_xi,
     zcash_person,
 )
-from pyblake2 import blake2b
-import unittest
+
+EXPAND_COMPRESS_VECTORS = [
+    ('8 11-bit chunks, all-ones', 11, 0,
+     'ffffffffffffffffffffff',
+     '07ff07ff07ff07ff07ff07ff07ff07ff'),
+    ('8 21-bit chunks, alternating 1s and 0s', 21, 0,
+     'aaaaad55556aaaab55555aaaaad55556aaaab55555',
+     '155555155555155555155555155555155555155555155555'),
+    ('8 21-bit chunks, based on example in the spec', 21, 0,
+     '000220000a7ffffe00123022b38226ac19bdf23456',
+     '0000440000291fffff0001230045670089ab00cdef123456'),
+    ('16 14-bit chunks, alternating 11s and 00s', 14, 0,
+     'cccf333cccf333cccf333cccf333cccf333cccf333cccf333cccf333',
+     '3333333333333333333333333333333333333333333333333333333333333333'),
+    ('8 11-bit chunks, all-ones, 2-byte padding', 11, 2,
+     'ffffffffffffffffffffff',
+     '000007ff000007ff000007ff000007ff000007ff000007ff000007ff000007ff'),
+]
 
 ZCASH_TEST_VECTORS = [
     (96, 5, b'block header', 0, [
@@ -61,6 +85,26 @@ ZCASH_TEST_VECTORS = [
 ]
 
 
+class ExpandAndCompressTestCase(unittest.TestCase):
+    def __init__(self, scope, bit_len, byte_pad, compact, expanded):
+        super(ExpandAndCompressTestCase, self).__init__('testExpandAndCompress')
+        self.scope = scope
+        self.bit_len = bit_len
+        self.byte_pad = byte_pad
+        self.compact = bytearray(unhexlify(compact))
+        self.expanded = bytearray(unhexlify(expanded))
+
+    def shortDescription(self):
+        return self.scope
+
+    def testExpandAndCompress(self):
+        out = expand_array(self.compact, len(self.expanded),
+                           self.bit_len, self.byte_pad)
+        self.assertEqual(self.expanded, out)
+        out = compress_array(self.expanded, len(self.compact),
+                             self.bit_len, self.byte_pad)
+        self.assertEqual(self.compact, out)
+
 class EquihashSolverTestCase(unittest.TestCase):
     def __init__(self, n, k, I, nonce, solns):
         super(EquihashSolverTestCase, self).__init__('testBasicSolver')
@@ -82,6 +126,8 @@ class EquihashSolverTestCase(unittest.TestCase):
 
 def test_vectors():
     suite = unittest.TestSuite()
+    for tv in EXPAND_COMPRESS_VECTORS:
+        suite.addTest(ExpandAndCompressTestCase(*tv))
     for tv in ZCASH_TEST_VECTORS:
         suite.addTest(EquihashSolverTestCase(*tv))
     return suite
