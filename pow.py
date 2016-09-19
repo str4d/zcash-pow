@@ -7,6 +7,11 @@ from operator import itemgetter
 from pyblake2 import blake2b
 import struct
 
+from convert import (
+    compress_array,
+    expand_array,
+)
+
 DEBUG = False
 VERBOSE = False
 progressbar = None
@@ -22,7 +27,10 @@ def hash_xi(digest, xi):
 
 def count_zeroes(h):
     # Convert to binary string
-    h = ''.join('{0:08b}'.format(ord(x), 'b') for x in h)
+    if type(h) == bytearray:
+        h = ''.join('{0:08b}'.format(x, 'b') for x in h)
+    else:
+        h = ''.join('{0:08b}'.format(ord(x), 'b') for x in h)
     # Count leading zeroes
     return (h+'1').index('1')
 
@@ -38,11 +46,12 @@ def distinct_indices(a, b):
     return True
 
 def xor(ha, hb):
-    return ''.join(chr(ord(a) ^ ord(b)) for a,b in zip(ha,hb))
+    return bytearray(a^b for a,b in zip(ha,hb))
 
 def gbp_basic(digest, n, k):
     '''Implementation of Basic Wagner's algorithm for the GBP.'''
     collision_length = n/(k+1)
+    hash_length = (k+1)*((collision_length+7)//8)
     indices_per_hash_output = 512/n
 
     # 1) Generate first list
@@ -58,7 +67,11 @@ def gbp_basic(digest, n, k):
             curr_digest = digest.copy()
             hash_xi(curr_digest, i/indices_per_hash_output)
             tmp_hash = curr_digest.digest()
-        X.append((tmp_hash[r*n/8:(r+1)*n/8], (i,)))
+        X.append((
+            expand_array(bytearray(tmp_hash[r*n/8:(r+1)*n/8]),
+                         hash_length, collision_length),
+            (i,)
+        ))
 
     # 3) Repeat step 2 until 2n/(k+1) bits remain
     for i in range(1, k):
@@ -173,13 +186,16 @@ def zcash_person(n, k):
     return b'ZcashPoW' + struct.pack('<II', n, k)
 
 def print_hash(h):
-    return ''.join('{0:02x}'.format(ord(x), 'x') for x in h)
+    if type(h) == bytearray:
+        return ''.join('{0:02x}'.format(x, 'x') for x in h)
+    else:
+        return ''.join('{0:02x}'.format(ord(x), 'x') for x in h)
 
 def validate_params(n, k):
     if (k >= n):
         raise ValueError('n must be larger than k')
-    if ((n/(k+1)) % 8 != 0):
-        raise ValueError('Parameters must satisfy n/(k+1) = 0 mod 8')
+    if (((n/(k+1))+1) >= 32):
+        raise ValueError('Parameters must satisfy n/(k+1)+1 < 32')
 
 def mine(n, k, d):
     print 'Miner starting'
