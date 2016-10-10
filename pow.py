@@ -141,7 +141,7 @@ def gbp_basic(digest, n, k):
         for l in range(0, j-1):
             for m in range(l+1, j):
                 res = xor(X[-1-l][0], X[-1-m][0])
-                if count_zeroes(res) == n and distinct_indices(X[-1-l][1], X[-1-m][1]):
+                if count_zeroes(res) == 8*hash_length and distinct_indices(X[-1-l][1], X[-1-m][1]):
                     if DEBUG and VERBOSE:
                         print 'Found solution:'
                         print '- %s %s' % (print_hash(X[-1-l][0]), X[-1-l][1])
