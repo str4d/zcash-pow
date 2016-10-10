@@ -1,4 +1,6 @@
 *.pyc
 *.swp
 
+.env
+
 .idea

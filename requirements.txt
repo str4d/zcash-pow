@@ -1,0 +1,3 @@
+cryptography
+pyblake2
+progressbar2  #optional for progress bars in `-v` and `-vv` modes

@@ -3,11 +3,13 @@
 The PoW currently being used by Zcash is Equihash, a memory-hard algorithm
 based on the Generalised Birthday Problem.
 
-## Requirements
+## Install
 
-* `cryptography`
-* `pyblake2`
-* `progressbar2` (optional for progress bars in `-v` and `-vv` modes)
+```
+virtualenv .env
+. .env/bin/activate
+pip install -r requirements.txt
+```
 
 ## Demo miner
 
