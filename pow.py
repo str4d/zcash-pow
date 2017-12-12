@@ -227,6 +227,17 @@ def mine(n, k, d):
             if DEBUG:
                 print 'GBP took %s' % str(datetime.today() - gbp_start)
                 print 'Number of solutions: %d' % len(solns)
+
+            # Equihash only allows inputs to solutions which fit into ((n/(k+1)) + 1) bits.
+            # If debugging, check to ensure that no solutions are larger than this limit.
+            if DEBUG:
+                for soln in solns:
+                    for val in soln:
+                        val = 2**((n/(k+1)) + 1) + 1
+                        if val > 2**((n/(k+1)) + 1):
+                            print 'Solution is invalid as an input exceeds the permissable bit length.'
+                            break
+
             for soln in solns:
                 if difficulty_filter(prev_hash, nonce, soln, d):
                     x = soln
